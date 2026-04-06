@@ -10,7 +10,6 @@ log = structlog.get_logger()
 # 🛡️ DYNAMIC QUEUE (Allows multiple keyword jobs to run in parallel)
 # Max 3 concurrent keywords with 4 sub-cells each for maximum stability
 MAX_CONCURRENT_KEYWORDS = 3
-executor = concurrent.futures.ThreadPoolExecutor(max_workers=MAX_CONCURRENT_KEYWORDS)
 
 def run_keyword_job(keyword_job_id: int):
     """Runs one keyword pipeline in its own event loop."""
@@ -38,6 +37,10 @@ def start_bulk_job(bulk_job_id: int):
         bulk_job.save()
 
         futures = []
+        
+        # Instantiate executor inside task to prevent Gunicorn fork deadlocks
+        executor = concurrent.futures.ThreadPoolExecutor(max_workers=MAX_CONCURRENT_KEYWORDS)
+        
         for kj in bulk_job.keyword_jobs.all():
             future = executor.submit(run_keyword_job, kj.id)
             futures.append(future)
@@ -46,6 +49,7 @@ def start_bulk_job(bulk_job_id: int):
         # Monitor and finalize in a separate control thread
         def monitor_batch():
             concurrent.futures.wait(futures)
+            executor.shutdown(wait=False)
             bulk_job.refresh_from_db()
             bulk_job.status = 'completed'
             bulk_job.status_message = f'Batch finished. Results analyzed.'
