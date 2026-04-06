@@ -1,0 +1,56 @@
+services:
+  db:
+    image: postgres:15
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${DB_NAME:-scraper_prod_db}
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres_pass}
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  web:
+    build: .
+    volumes:
+      - ./extractor_platform:/app
+    environment:
+      - DB_NAME=${DB_NAME:-scraper_prod_db}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres_pass}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - SECRET_KEY=${SECRET_KEY:-your_secret_key_here}
+      - DEBUG=${DEBUG:-False}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-*}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --no-input &&
+             gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 core.wsgi:application"
+
+# Optional: Celery Worker (uncomment to activate if you switch to Celery)
+#  worker:
+#    build: .
+#    volumes:
+#      - ./extractor_platform:/app
+#    environment:
+#      - DB_NAME=${DB_NAME:-scraper_prod_db}
+#      - DB_USER=${DB_USER:-postgres}
+#      - DB_PASSWORD=${DB_PASSWORD:-postgres_pass}
+#      - DB_HOST=db
+#      - DB_PORT=5432
+#      - REDIS_URL=redis://redis:6379/0
+#    depends_on:
+#      - db
+#      - redis
+#    command: celery -A core worker -l info
