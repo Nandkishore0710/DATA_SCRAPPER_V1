@@ -86,3 +86,9 @@ EMAIL_HOST_PASSWORD = 'oavv abcy dhvt lhhv'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 ADMIN_HUB_EMAIL = 'sonikhush004@gmail.com'
 ADMIN_HUB_PASSWORD = 'OMISCIENT_ROOT_HUB' # High-level access secret
+
+# Celery Configuration
+CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='redis://redis:6379/1')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+    
