@@ -2,6 +2,7 @@ import concurrent.futures
 import asyncio
 import structlog
 from django.utils import timezone
+from celery import shared_task
 from .models import BulkJob, KeywordJob
 
 log = structlog.get_logger()
@@ -25,6 +26,7 @@ def run_keyword_job(keyword_job_id: int):
     finally:
         loop.close()
 
+@shared_task
 def start_bulk_job(bulk_job_id: int):
     """
     Triggers concurrent execution of keyword segments.

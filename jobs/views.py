@@ -156,13 +156,8 @@ class StartBulkJobView(APIView):
                 keyword=keyword,
             )
 
-        # Fire all keyword jobs in parallel background threads
-        import threading
-        threading.Thread(
-            target=start_bulk_job,
-            args=(bulk_job.id,),
-            daemon=True
-        ).start()
+        # Fire bulk job safely in Celery worker container
+        start_bulk_job.delay(bulk_job.id)
 
         return Response({
             'bulk_job_id': bulk_job.id,
