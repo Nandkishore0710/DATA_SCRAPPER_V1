@@ -119,6 +119,8 @@ class Place(models.Model):
     rating = models.CharField(max_length=20, blank=True)
     review_count = models.CharField(max_length=50, blank=True)
     maps_url = models.URLField(max_length=2000, blank=True)
+    address = models.CharField(max_length=1000, blank=True)
+    opening_hours = models.TextField(blank=True)
     latitude = models.DecimalField(max_digits=12, decimal_places=8, null=True, blank=True)
     longitude = models.DecimalField(max_digits=13, decimal_places=8, null=True, blank=True)
     scraped_at = models.DateTimeField(auto_now_add=True)
