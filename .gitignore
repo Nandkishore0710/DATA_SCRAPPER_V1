@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+media/
+staticfiles/
+
+# Environment
+.env
+.env.production
+.env.local
+
+# Docker
+.dockerignore
+
+# Output/debug files
+output.html
+output2_raw.txt
+output_raw.txt
+debug.html
+test_lcl.html
+test_mobile.html
+google_cookies.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
