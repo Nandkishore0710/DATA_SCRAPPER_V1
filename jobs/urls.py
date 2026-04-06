@@ -7,6 +7,7 @@ urlpatterns = [
 
     # Bulk job endpoints
     path('jobs/start/', views.StartBulkJobView.as_view()),
+    path('jobs/estimate/', views.EstimateJobView.as_view()),
     path('jobs/', views.BulkJobListView.as_view()),
     path('jobs/<int:bulk_job_id>/status/', views.BulkJobStatusView.as_view()),
     path('jobs/<int:bulk_job_id>/', views.BulkJobDeleteView.as_view()),

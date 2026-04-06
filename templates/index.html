@@ -583,20 +583,20 @@
                     </svg>
                     <span>Runs</span>
                 </a>
-                <a class="nav-item" title="Actors">
+                <a class="nav-item" id="nav-actors" title="Actors">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                     </svg>
                     <span>Actors</span>
                 </a>
-                <a class="nav-item" title="Schedules">
+                <a class="nav-item" id="nav-schedules" title="Schedules">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="10"></circle>
                         <polyline points="12 6 12 12 16 14"></polyline>
                     </svg>
                     <span>Schedules</span>
                 </a>
-                <a class="nav-item" title="Webhooks">
+                <a class="nav-item" id="nav-webhooks" title="Webhooks">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 2v6h-6"></path>
                         <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
@@ -790,6 +790,24 @@
                 </div>
             </div>
 
+            <!-- Generic Placeholder Content -->
+            <div class="content-area" id="placeholder-content" style="display: none;">
+                <div class="content-header">
+                    <div>
+                        <h1 id="placeholder-title">Coming Soon</h1>
+                        <p id="placeholder-desc">This feature is currently under professional development.</p>
+                    </div>
+                </div>
+                <div class="panel" style="padding: 40px; text-align: center; color: var(--text-muted);">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="margin-bottom: 24px; opacity: 0.3;">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <p>We are working hard to bring you more advanced automation features.</p>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -817,6 +835,30 @@
         }
 
         // --- Navigation ---
+        const navItems = ['nav-runs', 'nav-actors', 'nav-schedules', 'nav-webhooks'];
+        const placeholderContent = document.getElementById('placeholder-content');
+        const placeholderTitle = document.getElementById('placeholder-title');
+
+        navItems.forEach(id => {
+            document.getElementById(id).addEventListener('click', () => {
+                // Update active state
+                navItems.forEach(i => document.getElementById(i).classList.remove('active'));
+                document.getElementById(id).classList.add('active');
+
+                // Switch views
+                runsContent.style.display = 'none';
+                detailsContent.style.display = 'none';
+                placeholderContent.style.display = 'none';
+
+                if (id === 'nav-runs') {
+                    runsContent.style.display = 'block';
+                } else {
+                    placeholderContent.style.display = 'block';
+                    placeholderTitle.innerText = id.split('-')[1].charAt(0).toUpperCase() + id.split('-')[1].slice(1);
+                }
+            });
+        });
+
         document.getElementById('back-to-runs-btn').addEventListener('click', () => {
             detailsContent.style.display = 'none';
             runsContent.style.display = 'block';

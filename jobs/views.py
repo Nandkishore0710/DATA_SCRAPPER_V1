@@ -320,3 +320,24 @@ class ExportKeywordCSVView(APIView):
             })
 
         return response
+
+
+class EstimateJobView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        keywords = request.data.get('keywords', [])
+        grid_size = int(request.data.get('grid_size', 10))
+        
+        if not keywords:
+            return Response({'error': 'keywords required'}, status=400)
+            
+        total_requests = len(keywords) * (grid_size * grid_size)
+        # Each request takes ~1.5s on average
+        estimated_seconds = total_requests * 1.5
+        
+        return Response({
+            'total_requests': total_requests,
+            'estimated_seconds': estimated_seconds,
+            'grid_info': f"{grid_size}x{grid_size}"
+        })

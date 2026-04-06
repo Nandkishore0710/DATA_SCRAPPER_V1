@@ -563,18 +563,21 @@ async def run_keyword_pipeline(keyword_job_id: int):
 
                 # Merge results — keep richest version of each place
                 for p in places:
-                    key = p.get('place_id') or _dedup_key(p)
+                    pid = p.get('place_id')
+                    key = pid or _dedup_key(p)
                     if not p['name'] or not key:
                         continue
+                    
                     if key not in seen:
                         seen[key] = p
+                        p['place_id'] = key # Ensure we have a unique ID for the DB
                         try:
                             await Place.objects.acreate(
                                 keyword_job=kj, **p
                             )
                             saved_count += 1
-                        except Exception:
-                            pass
+                        except Exception as e:
+                            log.error('db.save_failed', error=str(e), name=p['name'])
                     else:
                         # Update existing with richer data
                         existing = seen[key]
@@ -595,9 +598,9 @@ async def run_keyword_pipeline(keyword_job_id: int):
                                               'review_count', 'street', 'category']
                                     if existing.get(f)
                                 })
-                            except Exception:
-                                pass
-
+                            except Exception as e:
+                                pass # Update failed, not critical
+                
                 # Mark cell done when all its zooms complete
                 cells_done_set.add(task['cell_idx'])
                 kj.cells_done    = len(cells_done_set)
@@ -614,7 +617,8 @@ async def run_keyword_pipeline(keyword_job_id: int):
                          cell=task['cell_idx'],
                          zoom=task['zoom'],
                          method=method,
-                         found=len(places))
+                         found=len(places),
+                         saved_total=saved_count)
 
             # FIRE ALL TASKS AT ONCE
             t_http = time.time()
@@ -665,15 +669,18 @@ async def run_keyword_pipeline(keyword_job_id: int):
                     pw_count += len(places)
 
                     for p in places:
-                        key = p.get('place_id') or _dedup_key(p)
+                        pid = p.get('place_id')
+                        key = pid or _dedup_key(p)
                         if not p['name'] or not key or key in seen:
                             continue
+                        
                         seen[key] = p
+                        p['place_id'] = key # Ensure we have a unique ID for the DB
                         try:
                             await Place.objects.acreate(keyword_job=kj, **p)
                             saved_count += 1
-                        except Exception:
-                            pass
+                        except Exception as e:
+                            log.error('db.pw_save_failed', error=str(e), name=p['name'])
 
                     kj.total_extracted = saved_count
                     kj.status_message  = (
