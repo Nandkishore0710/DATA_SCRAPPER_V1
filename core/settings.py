@@ -1,6 +1,7 @@
 # core/settings.py
 from pathlib import Path
 from decouple import config
+from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
@@ -24,6 +25,7 @@ INSTALLED_APPS = [
 # Razorpay Configuration
 RAZORPAY_KEY_ID = config('RAZORPAY_KEY_ID', default='rzp_test_placeholder')
 RAZORPAY_KEY_SECRET = config('RAZORPAY_KEY_SECRET', default='secret_placeholder')
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -36,22 +38,38 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'core.urls'
 
-TEMPLATES = [{
-    'BACKEND': 'django.template.backends.django.DjangoTemplates',
-    'DIRS': [BASE_DIR / 'templates'],
-    'APP_DIRS': True,
-    'OPTIONS': {'context_processors': [
-        'django.template.context_processors.request',
-        'django.contrib.auth.context_processors.auth',
-        'django.contrib.messages.context_processors.messages',
-    ]},
-}]
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [BASE_DIR / 'templates'],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': config(
+        'DATABASE_URL',
+        default='postgres://postgres:postgres@db:5432/postgres',
+        cast=lambda v: {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': v.split('/')[-1],
+            'USER': v.split('//')[1].split(':')[0],
+            'PASSWORD': v.split(':')[2].split('@')[0],
+            'HOST': v.split('@')[1].split(':')[0],
+            'PORT': v.split(':')[-1].split('/')[0],
+        } if v.startswith('postgres') else {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    )
 }
 
 REST_FRAMEWORK = {
@@ -63,7 +81,6 @@ REST_FRAMEWORK = {
     ],
 }
 
-from datetime import timedelta
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=24),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
@@ -74,21 +91,18 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Email Configuration for Intel Hub OTP
+# Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-# Note: User provided 'gmial.com' in request, applying as requested. 
-# If connection fails, check for typo.
 EMAIL_HOST_USER = 'sonikhush004@gmail.com'
 EMAIL_HOST_PASSWORD = 'oavv abcy dhvt lhhv'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 ADMIN_HUB_EMAIL = 'sonikhush004@gmail.com'
-ADMIN_HUB_PASSWORD = 'OMISCIENT_ROOT_HUB' # High-level access secret
+ADMIN_HUB_PASSWORD = 'OMISCIENT_ROOT_HUB'
 
 # Celery Configuration
 CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='redis://redis:6379/1')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
-    
