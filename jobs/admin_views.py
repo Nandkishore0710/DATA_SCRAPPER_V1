@@ -11,7 +11,6 @@ import os
 import json
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from scraper.proxy_pool import PROXIES
 from scraper.proxy_logic import test_proxy_connection
 from django.core.mail import send_mail
 from functools import wraps
